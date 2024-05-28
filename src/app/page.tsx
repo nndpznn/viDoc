@@ -7,7 +7,7 @@ import Image from 'next/legacy/image'
 import { supabase } from '@/clients/supabaseClient'
 
 import { useTheme, Theme } from '@mui/material/styles'
-import { CircularProgress } from '@mui/material'
+import { Avatar, CircularProgress, IconButton } from '@mui/material'
 import Box from '@mui/material/Box'
 
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
@@ -21,6 +21,7 @@ import * as SupabaseAuthController from '@/controllers/SupabaseAuthController'
 import { splitFullName } from '@/utils/strings'
 import { ProfileRow, PROFILES_TABLE } from '@/types/supabase.database.custom.types'
 import useViewportHeight from '@/hooks/useViewportHeight'
+import { useSupabaseUserMetadata } from '@/hooks/useSupabaseUserMetadata'
 
 const useStyles = (theme: Theme) => ({
   root: {
@@ -73,6 +74,14 @@ export default function Home() {
 
   const [loading, setLoading] = useState(false)
 
+  const { avatarUrl, fullName, loading: metadataLoading } = useSupabaseUserMetadata()
+
+  console.log({
+    avatarUrl,
+    fullName,
+    metadataLoading,
+  })
+
   useEffect(() => {
     const checkSession = async () => {
       console.info('CHECKING SESSION')
@@ -87,6 +96,10 @@ export default function Home() {
     checkSession()
   }, [router])
 
+  const handleClick = () => {
+    console.info('Avatar Clicked')
+  }
+
   return (
     <Box
       sx={{
@@ -94,6 +107,9 @@ export default function Home() {
         height: `${viewportHeight}px`,
       }}
     >
+      <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }} onClick={handleClick}>
+        {metadataLoading ? <CircularProgress /> : <Avatar alt={fullName} src={avatarUrl} />}
+      </IconButton>
       <Box sx={classes.logoContainer}>
         <Image
           src="/images/your_app_logo_image.png"
