@@ -31,7 +31,7 @@ const useStyles = (theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     // backgroundColor: theme.palette.background.default,
-    backgroundColor: 'gray',
+    backgroundColor: '#574b60',
     fontWeight: 'bold',
     gap: theme.spacing(8),
   },
@@ -107,17 +107,13 @@ export default function Home() {
         height: `${viewportHeight}px`,
       }}
     >
+      <h1 className="font-bold text-3xl">Welcome to ViDoc</h1>
+
       <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }} onClick={handleClick}>
         {metadataLoading ? <CircularProgress /> : <Avatar alt={fullName} src={avatarUrl} />}
       </IconButton>
       <Box sx={classes.logoContainer}>
-        <Image
-          src="/images/your_app_logo_image.png"
-          alt="Your App Logo Alt Text"
-          layout="responsive"
-          width="783"
-          height="899"
-        />
+        <Image src="/images/cameraplaceholderlogo.png" alt="ViDoc Logo" layout="responsive" width="783" height="899" />
       </Box>
 
       {/* Add the logo here */}
