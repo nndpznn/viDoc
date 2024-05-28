@@ -21,8 +21,6 @@ import * as SupabaseAuthController from '@/controllers/SupabaseAuthController'
 import { splitFullName } from '@/utils/strings'
 import { ProfileRow, PROFILES_TABLE } from '@/types/supabase.database.custom.types'
 import useViewportHeight from '@/hooks/useViewportHeight'
-import { SPLASH_GREEN } from '@/constants/colors.constants'
-import useAnalytics from '@/utils/analytics/useAnalytics'
 
 const useStyles = (theme: Theme) => ({
   root: {
@@ -32,7 +30,7 @@ const useStyles = (theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     // backgroundColor: theme.palette.background.default,
-    backgroundColor: SPLASH_GREEN,
+    backgroundColor: 'gray',
     fontWeight: 'bold',
     gap: theme.spacing(8),
   },
@@ -70,7 +68,6 @@ const useStyles = (theme: Theme) => ({
 export default function Home() {
   const classes = useStyles(useTheme())
 
-  useAnalytics()
   const router = useRouter()
   const viewportHeight = useViewportHeight()
 
