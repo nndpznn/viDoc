@@ -96,8 +96,8 @@ export default function Home() {
     >
       <Box sx={classes.logoContainer}>
         <Image
-          src="/images/codequest_logo_LION_green_copilot.png"
-          alt="LMU Logo"
+          src="/images/your_app_logo_image.png"
+          alt="Your App Logo Alt Text"
           layout="responsive"
           width="783"
           height="899"
