@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import Image from 'next/legacy/image'
 
 import { Avatar, CircularProgress, IconButton, Button, Box, Container, Grid, Card } from '@mui/material'
 
@@ -57,9 +58,26 @@ export default function Dashboard() {
         </Grid>
       </Grid>
 
-      <Grid container spacing={2} className="flex justify-center content-center">
-        <Grid item xs={'auto'}>
-          <Card></Card>
+      <br></br>
+
+      <Grid container spacing={4} className="flex justify-center content-center">
+        <Grid item xs={6}>
+          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="350" height="200" />
+        </Grid>
+        <Grid item xs={6}>
+          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="350" height="200" />
+        </Grid>
+        <Grid item xs={6}>
+          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="350" height="200" />
+        </Grid>
+        <Grid item xs={6}>
+          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="350" height="200" />
+        </Grid>
+        <Grid item xs={6}>
+          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="350" height="200" />
+        </Grid>
+        <Grid item xs={6}>
+          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="350" height="200" />
         </Grid>
       </Grid>
     </div>
