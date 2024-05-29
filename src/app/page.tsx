@@ -109,11 +109,12 @@ export default function Home() {
     >
       <h1 className="font-bold text-3xl">Welcome to ViDoc</h1>
 
-      <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }} onClick={handleClick}>
+      {/* <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }} onClick={handleClick}>
         {metadataLoading ? <CircularProgress /> : <Avatar alt={fullName} src={avatarUrl} />}
-      </IconButton>
+      </IconButton> */}
+
       <Box sx={classes.logoContainer}>
-        <Image src="/images/cameraplaceholderlogo.png" alt="ViDoc Logo" layout="responsive" width="783" height="899" />
+        <Image src="/images/cameraplaceholderlogo.png" alt="ViDoc Logo" layout="responsive" width="512" height="512" />
       </Box>
 
       {/* Add the logo here */}
