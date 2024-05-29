@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-import { Avatar, CircularProgress, IconButton, Button, Box, Container } from '@mui/material'
+import { Avatar, CircularProgress, IconButton, Button, Box, Container, Grid, Card } from '@mui/material'
 
 import { supabase } from '@/clients/supabaseClient'
 import { useSupabaseUserMetadata } from '@/hooks/useSupabaseUserMetadata'
@@ -39,7 +39,29 @@ export default function Dashboard() {
       <p className="font-semibold ml-2">Log Out</p>
 
       <h1 className="text-center text-2xl font-bold">Your Dashboard</h1>
+      <p className="text-center">{fullName}</p>
       {/* <Button href="/">Click here to go back.</Button> */}
+
+      <br></br>
+
+      <Grid container spacing={2} className="flex justify-center content-center">
+        <Grid item xs={'auto'}>
+          <Button variant="contained" size="large" color="primary">
+            Create Project
+          </Button>
+        </Grid>
+        <Grid item xs={'auto'}>
+          <Button variant="contained" size="large" color="primary">
+            View Projects
+          </Button>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={2} className="flex justify-center content-center">
+        <Grid item xs={'auto'}>
+          <Card></Card>
+        </Grid>
+      </Grid>
     </div>
   )
 }
