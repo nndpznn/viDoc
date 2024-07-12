@@ -4,16 +4,36 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/legacy/image'
 
-import { Avatar, CircularProgress, IconButton, Button, Box, Container, Grid, Card } from '@mui/material'
+import { Avatar, CircularProgress, IconButton, Button, Container, Grid, Card, Typography, Stack } from '@mui/material'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
-import { grey } from '@mui/material/colors'
 
 import { supabase } from '@/clients/supabaseClient'
 import { useSupabaseUserMetadata } from '@/hooks/useSupabaseUserMetadata'
 
+import VideoCard from '../uicomponents/videoCard'
+
 const theme = createTheme({
   palette: {
-    primary: grey,
+    primary: {
+      main: '#102BEF',
+    },
+    secondary: {
+      main: '#575962',
+    },
+  },
+  typography: {
+    h1: {
+      fontSize: '3rem',
+      fontWeight: 600,
+    },
+    h2: {
+      fontSize: '1.75rem',
+      fontWeight: 600,
+    },
+    h3: {
+      fontSize: '1.5rem',
+      fontWeight: 600,
+    },
   },
 })
 
@@ -34,62 +54,48 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
-      <IconButton
-        size="large"
-        edge="start"
-        color="inherit"
-        aria-label="menu"
-        sx={{ mt: 1, ml: 1, mr: 1 }}
-        onClick={handleClick}
-      >
-        {metadataLoading ? <CircularProgress /> : <Avatar alt={fullName} src={avatarUrl} />}
-      </IconButton>
-      <p className="font-semibold ml-2">Log Out</p>
-
-      <h1 className="text-center text-2xl font-bold">Your Dashboard</h1>
-      <p className="text-center">{fullName}</p>
-      {/* <Button href="/">Click here to go back.</Button> */}
-
-      <br></br>
-
+    <Container>
       <ThemeProvider theme={theme}>
-        <Grid container spacing={2} className="flex justify-center content-center">
+        <Button variant="contained" onClick={handleClick} sx={{ ml: 1, mt: 2 }}>
+          Log Out
+        </Button>
+
+        <Stack alignItems="center" justifyContent="center" direction="row" gap={1} sx={{ mt: 2 }}>
+          <IconButton size="small" aria-label="menu" sx={{}}>
+            {metadataLoading ? <CircularProgress /> : <Avatar alt={fullName} src={avatarUrl} />}
+          </IconButton>
+
+          <Typography variant="h6">{fullName}</Typography>
+        </Stack>
+
+        <Typography variant="h4" sx={{ mt: 2, textAlign: 'center', fontWeight: 'bold' }}>
+          Dashboard
+        </Typography>
+
+        <br></br>
+
+        <Stack alignItems="center" direction="row" gap={14}>
+          <Grid>
+            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+              Your Projects
+            </Typography>
+          </Grid>
+
           <Grid item xs={'auto'}>
-            <Button variant="contained" size="large" color="primary">
-              Create Project
+            <Button variant="contained" size="medium" color="primary">
+              Create New
             </Button>
           </Grid>
-          <Grid item xs={'auto'}>
-            <Button variant="contained" size="large" color="primary">
-              View Projects
-            </Button>
+        </Stack>
+
+        <br></br>
+
+        <Grid container spacing={4} sx={{}}>
+          <Grid item xs>
+            <VideoCard />
           </Grid>
         </Grid>
       </ThemeProvider>
-
-      <br></br>
-
-      <Grid container spacing={4} className="flex justify-center content-center">
-        <Grid item xs={6}>
-          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="300" height="170" />
-        </Grid>
-        <Grid item xs={6}>
-          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="300" height="170" />
-        </Grid>
-        <Grid item xs={6}>
-          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="300" height="170" />
-        </Grid>
-        <Grid item xs={6}>
-          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="300" height="170" />
-        </Grid>
-        <Grid item xs={6}>
-          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="300" height="170" />
-        </Grid>
-        <Grid item xs={6}>
-          <Image src="/images/Not-Found.png" alt="ViDoc Logo" layout="responsive" width="300" height="170" />
-        </Grid>
-      </Grid>
-    </div>
+    </Container>
   )
 }

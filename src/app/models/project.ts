@@ -1,7 +1,12 @@
 class Project {
   title: string
+  // thumbnail: image
+  description: string
 
-  constructor() {
-    this.title = 'Untitled Video'
+  constructor(title: string, description: string) {
+    this.title = title
+    this.description = description
   }
 }
+
+export default Project

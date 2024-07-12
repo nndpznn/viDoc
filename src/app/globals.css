@@ -14,14 +14,14 @@
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
     --lavender: 87, 75, 96;
-    --grey: 158, 158, 158;
+    --grey: 120, 123, 135;
   }
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   /* background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb)); */
-  background: rgb(var(--lavender));
+  background: rgb(var(--grey));
 }
 
 @layer utilities {
