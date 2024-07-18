@@ -2,19 +2,23 @@ import React from 'react'
 import { Card, CardContent, CardMedia, Typography } from '@mui/material'
 import Project from '../models/project'
 
-const defaultCard = new Project('Hello ViDoc!', 'Default description.')
+const defaultCard = new Project('Hello ViDoc!', 'Default project description.')
 
-export default function VideoCard() {
+export default function VideoCard({ project }: { project: Project }) {
   return (
     <>
-      <Card sx={{ bgcolor: '#575962', maxWidth: 345 }}>
-        <CardMedia sx={{ height: 100 }} image="./public/images/Not-Found.png" title="not found image" />
+      <Card sx={{ bgcolor: '#575962', maxWidth: 400, minHeight: 320 }}>
+        <CardMedia
+          sx={{ height: 200, width: 400, padding: '1em 1em 0 1em', objectFit: 'contain' }}
+          image={'/images/notfound.png'}
+          title="not found image"
+        />
         <CardContent>
           <Typography variant="h5" color="white" sx={{ fontWeight: 'bold' }}>
-            {defaultCard.title}
+            {project.title ? project.title : defaultCard.title}
           </Typography>
-          <Typography variant="h6" color="white" sx={{}}>
-            {defaultCard.description}
+          <Typography variant="body1" color="white" sx={{}}>
+            {project.description ? project.description : defaultCard.description}
           </Typography>
         </CardContent>
       </Card>

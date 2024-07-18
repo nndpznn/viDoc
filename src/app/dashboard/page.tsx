@@ -11,6 +11,7 @@ import { supabase } from '@/clients/supabaseClient'
 import { useSupabaseUserMetadata } from '@/hooks/useSupabaseUserMetadata'
 
 import VideoCard from '../uicomponents/videoCard'
+import Project from '../models/project'
 
 const theme = createTheme({
   palette: {
@@ -36,6 +37,11 @@ const theme = createTheme({
     },
   },
 })
+
+// EXAMPLE PROJECTS
+const project1 = new Project('Korea Vlog #1', 'The first of many Study Abroad vlogs!')
+const project2 = new Project('Korea Pre-Prep', 'Finishing up some last things I need to do before leaving.')
+const project3 = new Project('Doing absolutely... something?', 'Maybe I do have it in me.')
 
 export default function Dashboard() {
   const router = useRouter()
@@ -90,9 +96,15 @@ export default function Dashboard() {
 
         <br></br>
 
-        <Grid container spacing={4} sx={{}}>
-          <Grid item xs>
-            <VideoCard />
+        <Grid container spacing={2} sx={{}} alignItems="center" justifyContent="center">
+          <Grid item xs={12} sm={4}>
+            <VideoCard project={project1} />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <VideoCard project={project2} />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <VideoCard project={project3} />
           </Grid>
         </Grid>
       </ThemeProvider>
