@@ -26,7 +26,7 @@ export default function LogoutButton({ logoutFunction }: { logoutFunction: Funct
         <DialogTitle id="alert-dialog-title">{'Log out?'}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            You'll have to sign into viDoc again to see your dashboard.
+            You will have to sign into viDoc again to see your dashboard.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
