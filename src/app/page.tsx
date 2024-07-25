@@ -7,8 +7,7 @@ import Image from 'next/legacy/image'
 import { supabase } from '@/clients/supabaseClient'
 
 import { useTheme, Theme } from '@mui/material/styles'
-import { Avatar, CircularProgress, IconButton } from '@mui/material'
-import Box from '@mui/material/Box'
+import { Avatar, CircularProgress, Typography, Box } from '@mui/material'
 
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
 
@@ -107,7 +106,11 @@ export default function Home() {
         height: `${viewportHeight}px`,
       }}
     >
-      <h1 className="font-bold text-3xl">Welcome to ViDoc</h1>
+      {/* <Box sx={{ bgcolor: '#102BEF', p: 1, display: 'inline-block' }}> */}
+      <Typography variant="h1" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+        welcome to <span style={{ backgroundColor: '#102BEF', padding: 10, borderRadius: 15 }}>viDoc</span>
+      </Typography>
+      {/* </Box> */}
 
       <Box sx={classes.logoContainer}>
         <Image src="/images/cameraplaceholderlogo.png" alt="ViDoc Logo" layout="responsive" width="512" height="512" />
@@ -118,6 +121,7 @@ export default function Home() {
       ) : (
         <GoogleLogin
           useOneTap={false}
+          size="large"
           type="standard"
           onSuccess={async (credentialResponse: CredentialResponse) => {
             setLoading(true)
