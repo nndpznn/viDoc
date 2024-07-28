@@ -7,9 +7,9 @@ const defaultCard = new Project('Hello ViDoc!', 'Default project description.', 
 export default function VideoCard({ project }: { project: Project }) {
   return (
     <>
-      <Card sx={{ bgcolor: '#575962', maxWidth: 400, minHeight: 320, ':hover': { boxShadow: 10 } }}>
+      <Card sx={{ ml: 2, mr: 2, mb: 2, bgcolor: '#575962', width: 350, minHeight: 330, ':hover': { boxShadow: 10 } }}>
         <CardMedia
-          sx={{ height: 200, width: 400, padding: '1em 1em 0 1em', objectFit: 'contain' }}
+          sx={{ height: 200, width: 350, padding: '1em 1em 0 1em', objectFit: 'contain' }}
           image={'/images/notfound.png'}
           title="not found image"
         />

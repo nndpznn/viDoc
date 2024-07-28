@@ -123,6 +123,7 @@ export default function Home() {
           useOneTap={false}
           size="large"
           type="standard"
+          // style={{ width: '300px', height: '50px' }}
           onSuccess={async (credentialResponse: CredentialResponse) => {
             setLoading(true)
             console.info('CREDENTIAL RESPONSE JWT TOKEN: ', JSON.stringify(credentialResponse, null, 2))

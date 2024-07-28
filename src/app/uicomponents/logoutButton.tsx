@@ -19,7 +19,7 @@ export default function LogoutButton({ logoutFunction }: { logoutFunction: Funct
 
   return (
     <>
-      <Button variant="contained" onClick={handleOpen} sx={{ ml: 1, mt: 2 }}>
+      <Button variant="contained" onClick={handleOpen} sx={{ mt: 2 }}>
         Log Out
       </Button>
       <Dialog open={open} onClose={handleClose}>
