@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Introducing viDoc!
 
-## Getting Started
+Targeting amateur videographers and filmmakers looking for a platform to organize their many ideas and keep track of projects, viDoc is designed to streamline the creative process, providing space to take notes, compose shotlists, and eventually, organize ideas visually on a graphic timeline.
 
-First, run the development server:
+### State of viDoc (updated 9/9)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+As of Monday, 9/9, viDoc is still in early stages of development, not yet ready to present to a larger user base. The largest piece of the puzzle(and most unique part in my opinion), the drag-and-drop-style graphic timeline, has not yet been implemented. I am accepting feedback from those who decide to give it a try and will try and respond as best I can.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Ideation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+As a hobbyist content creator myself, I've struggled to find a free resource to make video outlines to the level of complexity I desire. While notetaking apps are a workable alternative, their all-purpose nature prevents them from providing the exact support that videographers need.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### To-Dos
 
-## Learn More
+Some ideas of possible additions/changes to viDoc that are inconsideration.
 
-To learn more about Next.js, take a look at the following resources:
+- [High Priority] GRAPHIC TIMELINE with drag-and-drop functionality.
+- [High Priority] STICKY NOTE/INKLING feature to add small fragmented notes and ideas indiscriminately.
+- SHOTLIST feature
+- Thumbnail submit system
+- "Mark as published/finished" button
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- Not needing anything in particular except for a chance to practice my full-stack skills, I chose a very common tech stack, composed of TypeScript, React, Next.js, and Supabase.
+- The project is hosted by Vercel and makes use of the MUI MaterialUI library.
 
-## Deploy on Vercel
+[![My Skills](https://skillicons.dev/icons?i=ts,react,nextjs,supabase,vercel,materialui)](https://skillicons.dev)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Thanks/Credits
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- I would like to extend my thanks to LMU Keck Lab Manager, [MasaoKitamura](https://github.com/masaok), for getting me started with Next.js and hooking up the initial Supabase connection, as well as providing general guidance and support. I would not know where to start without you!
+- Thank you to [Net Ninja](https://www.youtube.com/@NetNinja) on YouTube for tutorials on accessing Supabase through JS/React!
+- Thank you to ChatGPT for helping me scrub through the Next.js documentation to find causes for runtime errors, explain some React and TypeScript concepts to me, and improve the conciseness of my code.

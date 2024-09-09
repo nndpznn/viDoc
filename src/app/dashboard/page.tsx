@@ -1,9 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import Image from 'next/legacy/image'
 
 import { Avatar, CircularProgress, IconButton, Button, Container, Grid, Card, Typography, Stack } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
@@ -38,10 +36,6 @@ export default function Dashboard() {
     await supabase.auth.signOut()
   }
 
-  const handleCreateNew = () => {
-    router.push('/createPage')
-  }
-
   const [fetchError, setFetchError] = useState<any>(null)
   const [projects, setProjects] = useState<any>(null)
 
@@ -73,7 +67,9 @@ export default function Dashboard() {
             {metadataLoading ? <CircularProgress /> : <Avatar alt={fullName} src={avatarUrl} />}
           </IconButton>
 
-          <Typography variant="h6">{fullName}</Typography>
+          <Typography variant="h6">
+            <span style={{ backgroundColor: '#575962', padding: 10, borderRadius: 15 }}>{fullName}</span>
+          </Typography>
         </Stack>
 
         <Typography variant="h4" sx={{ mt: 2, textAlign: 'center', fontWeight: 'bold' }}>
@@ -87,7 +83,7 @@ export default function Dashboard() {
             Your Projects
           </Typography>
 
-          <Button variant="contained" size="medium" color="primary" onClick={handleCreateNew}>
+          <Button variant="contained" size="medium" color="primary" onClick={() => router.push('/createPage')}>
             Create New
           </Button>
         </Stack>
@@ -96,7 +92,19 @@ export default function Dashboard() {
 
         <Grid container spacing={0} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="center" justifyContent="center">
           {fetchError && (
-            <Typography variant="h5" sx={{ ml: 8, mr: 8, mt: 15, textAlign: 'center', fontWeight: 'bold' }}>
+            <Typography
+              variant="h4"
+              sx={{
+                ml: 8,
+                mr: 8,
+                mt: 15,
+                textAlign: 'center',
+                fontWeight: 'bold',
+                backgroundColor: '#575962',
+                padding: 5,
+                borderRadius: 15,
+              }}
+            >
               {fetchError}
             </Typography>
           )}
@@ -104,7 +112,15 @@ export default function Dashboard() {
           {projects && (
             <>
               {projects.map((project: Project) => (
-                <Grid key={project.id} item xs={12} sm={6} md={4} lg={3}>
+                <Grid
+                  key={project.id}
+                  item
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  lg={3}
+                  onClick={() => router.push(`/dashboard/${project.id}`)}
+                >
                   <VideoCard project={project}></VideoCard>
                 </Grid>
               ))}

@@ -34,6 +34,11 @@ export default function CreatePage() {
     router.push('/dashboard')
   }
 
+  const handleClear = () => {
+    setTitle('')
+    setDescription('')
+  }
+
   const handleSubmit = async (e: any) => {
     e.preventDefault()
 
@@ -62,6 +67,7 @@ export default function CreatePage() {
           title: title,
           description: description,
           user_id: userID,
+          full_name: fullName,
         },
       ])
       .select()
@@ -145,7 +151,7 @@ export default function CreatePage() {
         </form>
 
         <Stack direction="row" justifyContent="space-between">
-          <Button variant="contained" size="medium" color="primary" sx={{ mt: 2 }}>
+          <Button variant="contained" size="medium" color="primary" onClick={handleClear} sx={{ mt: 2 }}>
             Clear
           </Button>
           <Button variant="contained" size="medium" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>

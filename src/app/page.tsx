@@ -6,7 +6,7 @@ import Image from 'next/legacy/image'
 
 import { supabase } from '@/clients/supabaseClient'
 
-import { useTheme, Theme } from '@mui/material/styles'
+import { useTheme, Theme, ThemeProvider } from '@mui/material/styles'
 import { Avatar, CircularProgress, Typography, Box } from '@mui/material'
 
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
@@ -21,6 +21,7 @@ import { splitFullName } from '@/utils/strings'
 import { ProfileRow, PROFILES_TABLE } from '@/types/supabase.database.custom.types'
 import useViewportHeight from '@/hooks/useViewportHeight'
 import { useSupabaseUserMetadata } from '@/hooks/useSupabaseUserMetadata'
+import theme from './theme/allTheme'
 
 const useStyles = (theme: Theme) => ({
   root: {
@@ -106,87 +107,93 @@ export default function Home() {
         height: `${viewportHeight}px`,
       }}
     >
-      {/* <Box sx={{ bgcolor: '#102BEF', p: 1, display: 'inline-block' }}> */}
-      <Typography variant="h1" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-        welcome to <span style={{ backgroundColor: '#102BEF', padding: 10, borderRadius: 15 }}>viDoc</span>
-      </Typography>
-      {/* </Box> */}
+      <ThemeProvider theme={theme}>
+        <Typography variant="h1" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+          welcome to <span style={{ backgroundColor: '#102BEF', padding: 10, borderRadius: 15 }}>viDoc</span>
+        </Typography>
 
-      <Box sx={classes.logoContainer}>
-        <Image src="/images/cameraplaceholderlogo.png" alt="ViDoc Logo" layout="responsive" width="512" height="512" />
-      </Box>
+        <Box sx={classes.logoContainer}>
+          <Image
+            src="/images/cameraplaceholderlogo.png"
+            alt="ViDoc Logo"
+            layout="responsive"
+            width="512"
+            height="512"
+          />
+        </Box>
 
-      {loading ? (
-        <CircularProgress />
-      ) : (
-        <GoogleLogin
-          useOneTap={false}
-          size="large"
-          type="standard"
-          // style={{ width: '300px', height: '50px' }}
-          onSuccess={async (credentialResponse: CredentialResponse) => {
-            setLoading(true)
-            console.info('CREDENTIAL RESPONSE JWT TOKEN: ', JSON.stringify(credentialResponse, null, 2))
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          <GoogleLogin
+            useOneTap={false}
+            size="large"
+            type="standard"
+            // style={{ width: '300px', height: '50px' }}
+            onSuccess={async (credentialResponse: CredentialResponse) => {
+              setLoading(true)
+              console.info('CREDENTIAL RESPONSE JWT TOKEN: ', JSON.stringify(credentialResponse, null, 2))
 
-            if (!credentialResponse.credential) throw new Error('No credential found in response')
+              if (!credentialResponse.credential) throw new Error('No credential found in response')
 
-            // Sign in to Supabase with the Google credential
-            // https://supabase.com/docs/guides/auth/social-login/auth-google#using-personalized-sign-in-buttons-one-tap-or-automatic-signin
-            const supabaseResponse = await SupabaseAuthController.signInWithIdToken({
-              provider: 'google',
-              token: credentialResponse.credential,
-            })
+              // Sign in to Supabase with the Google credential
+              // https://supabase.com/docs/guides/auth/social-login/auth-google#using-personalized-sign-in-buttons-one-tap-or-automatic-signin
+              const supabaseResponse = await SupabaseAuthController.signInWithIdToken({
+                provider: 'google',
+                token: credentialResponse.credential,
+              })
 
-            console.info('SUPABASE signInWithIdToken RESPONSE: ', supabaseResponse)
+              console.info('SUPABASE signInWithIdToken RESPONSE: ', supabaseResponse)
 
-            // Get the user's full name from the response
-            const { fullName, email, uid } = SupabaseAuthController.extractSupabaseUserFields(supabaseResponse)
+              // Get the user's full name from the response
+              const { fullName, email, uid } = SupabaseAuthController.extractSupabaseUserFields(supabaseResponse)
 
-            // Split the full name into first and last name
-            const { firstName, lastName } = splitFullName(fullName)
+              // Split the full name into first and last name
+              const { firstName, lastName } = splitFullName(fullName)
 
-            // Search Supabase profiles table for the profile by UID
-            const { data: profileData, error: profileError } = await supabase
-              .from(PROFILES_TABLE)
-              .select()
-              .eq('uid', uid)
-              .single()
-            console.info('EXISTING PROFILE DATA: ', profileData)
+              // Search Supabase profiles table for the profile by UID
+              const { data: profileData, error: profileError } = await supabase
+                .from(PROFILES_TABLE)
+                .select()
+                .eq('uid', uid)
+                .single()
+              console.info('EXISTING PROFILE DATA: ', profileData)
 
-            const baseUpsertData: ProfileRow = {
-              uid,
-              full_name: fullName,
-              email,
-            }
+              const baseUpsertData: ProfileRow = {
+                uid,
+                full_name: fullName,
+                email,
+              }
 
-            // If the first and last name are already in the profiles table, leave them out of the upsert
-            const upsertData =
-              profileData?.first_name && profileData?.last_name
-                ? baseUpsertData
-                : {
-                    ...baseUpsertData,
-                    first_name: firstName,
-                    last_name: lastName,
-                  }
+              // If the first and last name are already in the profiles table, leave them out of the upsert
+              const upsertData =
+                profileData?.first_name && profileData?.last_name
+                  ? baseUpsertData
+                  : {
+                      ...baseUpsertData,
+                      first_name: firstName,
+                      last_name: lastName,
+                    }
 
-            // Upsert the row
-            const { data, error } = await supabase
-              .from(PROFILES_TABLE)
-              .upsert([upsertData], { onConflict: 'uid' }) // On insert conflict, update by uid
-              .select()
-            console.info('UPSERTED DATA: ', data)
+              // Upsert the row
+              const { data, error } = await supabase
+                .from(PROFILES_TABLE)
+                .upsert([upsertData], { onConflict: 'uid' }) // On insert conflict, update by uid
+                .select()
+              console.info('UPSERTED DATA: ', data)
 
-            if (error) console.error('UPSERT ERROR: ', error)
+              if (error) console.error('UPSERT ERROR: ', error)
 
-            console.info('routing to dashboard...')
+              console.info('routing to dashboard...')
 
-            router.push('/dashboard')
-          }}
-          onError={() => {
-            console.info('Login Failed')
-          }}
-        />
-      )}
+              router.push('/dashboard')
+            }}
+            onError={() => {
+              console.info('Login Failed')
+            }}
+          />
+        )}
+      </ThemeProvider>
     </Box>
   )
 }
