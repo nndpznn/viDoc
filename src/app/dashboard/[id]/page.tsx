@@ -89,7 +89,7 @@ export default function ProjectDetail() {
         </Button>
 
         <Typography variant="h1" sx={{ fontStyle: 'italic', textAlign: 'center' }}>
-          "{data.title}"
+          `&quot;`{data.title}`&quot;`
         </Typography>
 
         <Typography variant="h5" sx={{ fontStyle: 'italic', textAlign: 'center', ml: 3, mr: 3 }}>
@@ -109,7 +109,7 @@ export default function ProjectDetail() {
           <DialogTitle id="alert-dialog-title">{'Delete viDoc?'}</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              This project won't ever see the light of day... are you sure?
+              This project won`&apos;`t ever see the light of day... are you sure?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
