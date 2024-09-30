@@ -1,4 +1,3 @@
-import { Card, CardContent, Typography } from '@mui/material'
 import Timeline from '../models/timeline'
 
 export default function TimelineCard({ timeline }: { timeline: Timeline }) {
@@ -31,9 +30,6 @@ export default function TimelineCard({ timeline }: { timeline: Timeline }) {
           {' '}
         </div>
       </div>
-      {/* <Card
-        sx={{ width: 1000, height: 300, bgcolor: '#9597a1', alignItems: 'center', boxShadow: '0', mt: 2, mb: 2 }}
-      ></Card> */}
     </>
   )
 }

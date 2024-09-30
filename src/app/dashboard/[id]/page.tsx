@@ -18,6 +18,7 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
+  TextField,
 } from '@mui/material'
 import { useParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
@@ -26,10 +27,17 @@ import { useEffect, useState } from 'react'
 export default function ProjectDetail() {
   const router = useRouter()
   const { id } = useParams()
+
+  const [openDelete, setOpenDelete] = useState(false)
+  const [openNewInkling, setOpenNewInkling] = useState(false)
+  const [newInklingTitle, setNewInklingTitle] = useState('')
+  const [newInklingBody, setNewInklingBody] = useState('')
+  const [formError, setFormError] = useState('')
+
   const [data, setData] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
-  const [openDelete, setOpenDelete] = useState(false)
 
+  // Handling delete post
   const handleDelete = async () => {
     const { data, error } = await supabase.from('projects').delete().eq('id', id)
     router.back()
@@ -42,6 +50,64 @@ export default function ProjectDetail() {
     }
   }
 
+  const handleCloseInklings = () => {
+    setOpenNewInkling(false)
+    setNewInklingTitle('')
+    setNewInklingBody('')
+  }
+
+  // IN PROGRESS SUBMIT FUNCTION
+  const handleSubmit = async (e: any) => {
+    e.preventDefault()
+
+    if (!newInklingTitle || !newInklingBody) {
+      setFormError('Please fill out all fields before submitting.')
+      // setOpen(true)
+      return
+    }
+
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    if (sessionError || !session) {
+      setFormError('User is not authenticated.')
+      console.log('session error')
+      return
+    }
+
+    const userID = session.user.id
+    console.log(userID)
+
+    const { data, error } = await supabase
+      .from('inklings')
+      .insert([
+        {
+          title: newInklingTitle,
+          body: newInklingBody,
+          project_id: id,
+          user_id: userID,
+        },
+      ])
+      .select()
+
+    if (error) {
+      console.log('data error')
+      setFormError("Data couldn't be published.")
+    }
+
+    if (data) {
+      console.log(data)
+      console.log('form data submitted successfully!', newInklingBody, newInklingTitle)
+      setNewInklingTitle('')
+      setNewInklingBody('')
+      setFormError('')
+      setOpenNewInkling(false)
+    }
+  }
+
+  // Fetching project information from Supabase based on page ID.
   useEffect(() => {
     if (!id) return
 
@@ -59,6 +125,7 @@ export default function ProjectDetail() {
     fetchData()
   }, [id])
 
+  // Loading case, displays basic graphic
   if (loading || !data)
     return (
       <div>
@@ -103,6 +170,18 @@ export default function ProjectDetail() {
           <Button variant="contained" size="medium" color="primary" sx={{ mt: 2 }} onClick={() => setOpenDelete(true)}>
             Delete
           </Button>
+          <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
+            <DialogTitle id="alert-dialog-title">Delete viDoc?</DialogTitle>
+            <DialogContent>This project won&apos;t ever see the light of day... are you sure?</DialogContent>
+            <DialogActions>
+              <Button variant="contained" onClick={() => setOpenDelete(false)}>
+                Cancel
+              </Button>
+              <Button variant="contained" onClick={handleDelete} autoFocus>
+                Yes, delete
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Stack>
 
         <Typography variant="h1" sx={{ fontStyle: 'italic', textAlign: 'center' }}>
@@ -119,23 +198,6 @@ export default function ProjectDetail() {
           </Button>
         </Stack>
 
-        <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
-          <DialogTitle id="alert-dialog-title">{'Delete viDoc?'}</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              This project won&apos;t ever see the light of day... are you sure?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button variant="contained" onClick={() => setOpenDelete(false)}>
-              Cancel
-            </Button>
-            <Button variant="contained" onClick={handleDelete} autoFocus>
-              Yes, delete
-            </Button>
-          </DialogActions>
-        </Dialog>
-
         <Typography variant="h3" sx={{ mt: 2, mb: 2 }}>
           Timeline
         </Typography>
@@ -145,9 +207,58 @@ export default function ProjectDetail() {
           <Typography variant="h3" sx={{ mt: 2, mb: 2 }}>
             Inklings
           </Typography>
-          <Button variant="contained" size="medium">
+          <Button variant="contained" size="medium" onClick={() => setOpenNewInkling(true)}>
             New
           </Button>
+          <Dialog open={openNewInkling} onClose={handleCloseInklings}>
+            <DialogTitle id="new-inkling-heading">New Inkling</DialogTitle>
+            <DialogContent>
+              Title
+              <TextField
+                value={newInklingTitle}
+                onChange={e => setNewInklingTitle(e.target.value)}
+                autoFocus
+                required
+                margin="dense"
+                fullWidth
+                variant="outlined"
+                InputProps={{
+                  style: {
+                    fontSize: '1.75rem',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                  },
+                }}
+              />
+              Body
+              <TextField
+                onChange={e => setNewInklingBody(e.target.value)}
+                value={newInklingBody}
+                multiline
+                rows={4}
+                autoFocus
+                required
+                margin="dense"
+                fullWidth
+                variant="outlined"
+                InputProps={{
+                  style: {
+                    fontSize: '1.75rem',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                  },
+                }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button variant="contained" onClick={handleCloseInklings}>
+                Cancel
+              </Button>
+              <Button variant="contained" type="submit" onClick={handleSubmit}>
+                Post
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Stack>
 
         <InklingCard inkling={exampleInkling1}></InklingCard>

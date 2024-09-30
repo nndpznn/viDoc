@@ -70,7 +70,7 @@ export default function CreatePage() {
 
     if (error) {
       console.log(error)
-      setFormError('Please fill in all fields before submitting.')
+      setFormError("Data couldn't be published.")
     }
 
     if (data) {
@@ -82,10 +82,6 @@ export default function CreatePage() {
   }
 
   const [open, setOpen] = useState(false)
-
-  const handleClose = () => {
-    setOpen(false)
-  }
 
   return (
     <Container>
@@ -113,7 +109,7 @@ export default function CreatePage() {
             onChange={e => setTitle(e.target.value)}
             size="medium"
             variant="outlined"
-            fullWidth={true}
+            fullWidth
             sx={{ mt: 1, backgroundColor: '#575962' }}
             InputProps={{
               style: {
@@ -134,7 +130,7 @@ export default function CreatePage() {
             rows={4}
             size="medium"
             variant="outlined"
-            fullWidth={true}
+            fullWidth
             sx={{ mt: 1, backgroundColor: '#575962' }}
             InputProps={{
               style: {
@@ -161,7 +157,7 @@ export default function CreatePage() {
           </Button>
         </Stack>
 
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog open={open} onClose={() => setOpen(false)}>
           <DialogTitle id="alert-dialog-title">{'Submitting error.'}</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
@@ -169,7 +165,7 @@ export default function CreatePage() {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button variant="contained" onClick={handleClose}>
+            <Button variant="contained" onClick={() => setOpen(false)}>
               Ok
             </Button>
           </DialogActions>

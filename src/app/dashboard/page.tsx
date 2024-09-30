@@ -102,7 +102,7 @@ export default function Dashboard() {
 
         <br></br>
 
-        <Grid container spacing={0} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="center" justifyContent="center">
+        <Grid container spacing={0} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="center">
           {fetchError && (
             <Typography
               variant="h4"

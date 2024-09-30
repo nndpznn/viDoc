@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material'
+import { createTheme, Paper } from '@mui/material'
 
 const theme = createTheme({
   palette: {
@@ -21,6 +21,16 @@ const theme = createTheme({
     h3: {
       fontSize: '2rem',
       fontWeight: 600,
+    },
+  },
+  components: {
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: '#9597a1',
+          color: '#FFFFFF',
+        },
+      },
     },
   },
 })

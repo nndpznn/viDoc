@@ -24,11 +24,7 @@ export default function LogoutButton({ logoutFunction }: { logoutFunction: Funct
       </Button>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle id="alert-dialog-title">{'Log out?'}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            You will have to sign into viDoc again to see your dashboard.
-          </DialogContentText>
-        </DialogContent>
+        <DialogContent>You will have to sign into viDoc again to see your dashboard.</DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={handleClose}>
             Cancel
