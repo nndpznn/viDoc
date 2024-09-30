@@ -1,7 +1,11 @@
 'use client'
 
+import Inkling from '@/app/models/inkling'
 import Project from '@/app/models/project'
+import Timeline from '@/app/models/timeline'
 import theme from '@/app/theme/allTheme'
+import InklingCard from '@/app/uicomponents/inklingCard'
+import TimelineCard from '@/app/uicomponents/timelineCard'
 import { supabase } from '@/clients/supabaseClient'
 import {
   Button,
@@ -81,15 +85,28 @@ export default function ProjectDetail() {
       </div>
     )
 
+  // EXAMPLE TIMELINE
+  const exampleTimeline1 = new Timeline()
+  // EXAMPLE INKLING
+  const exampleInkling1 = new Inkling(
+    'General order of scenes',
+    '1 - Intro monologue about locking in and working on internship applications. 2 - Baseball game w/ HUG. 3 - Cafe of the Week, probably Protokoll.'
+  )
+
   return (
     <Container>
       <ThemeProvider theme={theme}>
-        <Button variant="contained" sx={{ mt: 2, mb: 2 }} onClick={() => router.back()}>
-          Back
-        </Button>
+        <Stack alignItems="center" justifyContent="space-between" direction="row">
+          <Button variant="contained" sx={{ mt: 2, mb: 2 }} onClick={() => router.back()}>
+            Back
+          </Button>
+          <Button variant="contained" size="medium" color="primary" sx={{ mt: 2 }} onClick={() => setOpenDelete(true)}>
+            Delete
+          </Button>
+        </Stack>
 
         <Typography variant="h1" sx={{ fontStyle: 'italic', textAlign: 'center' }}>
-          `&quot;`{data.title}`&quot;`
+          &quot;{data.title}&quot;
         </Typography>
 
         <Typography variant="h5" sx={{ fontStyle: 'italic', textAlign: 'center', ml: 3, mr: 3 }}>
@@ -98,10 +115,7 @@ export default function ProjectDetail() {
 
         <Stack alignItems="center" justifyContent="center" direction="row" gap={25}>
           <Button variant="contained" size="medium" color="primary" sx={{ mt: 2 }}>
-            Edit
-          </Button>
-          <Button variant="contained" size="medium" color="primary" sx={{ mt: 2 }} onClick={() => setOpenDelete(true)}>
-            Delete
+            Edit project info
           </Button>
         </Stack>
 
@@ -109,7 +123,7 @@ export default function ProjectDetail() {
           <DialogTitle id="alert-dialog-title">{'Delete viDoc?'}</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              This project won`&apos;`t ever see the light of day... are you sure?
+              This project won&apos;t ever see the light of day... are you sure?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -121,6 +135,22 @@ export default function ProjectDetail() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        <Typography variant="h3" sx={{ mt: 2, mb: 2 }}>
+          Timeline
+        </Typography>
+        <TimelineCard timeline={exampleTimeline1}></TimelineCard>
+
+        <Stack alignItems="center" justifyContent="space-between" direction="row">
+          <Typography variant="h3" sx={{ mt: 2, mb: 2 }}>
+            Inklings
+          </Typography>
+          <Button variant="contained" size="medium">
+            New
+          </Button>
+        </Stack>
+
+        <InklingCard inkling={exampleInkling1}></InklingCard>
       </ThemeProvider>
     </Container>
   )

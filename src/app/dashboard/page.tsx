@@ -41,7 +41,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const { data, error } = await supabase.from('projects').select()
+      const { data, error } = await supabase.from('projects').select().order('created_at', { ascending: false })
 
       if (error) {
         setFetchError('Error fetching viDoc projects for this user.')
@@ -60,7 +60,19 @@ export default function Dashboard() {
   return (
     <Container>
       <ThemeProvider theme={theme}>
-        <LogoutButton logoutFunction={handleLogout} />
+        <Stack alignItems="center" direction="row" justifyContent="space-between">
+          <LogoutButton logoutFunction={handleLogout} />
+
+          <Button
+            disabled={true}
+            variant="contained"
+            size="medium"
+            color="primary"
+            onClick={() => router.push('/dragdropTest')}
+          >
+            Drag/Drop
+          </Button>
+        </Stack>
 
         <Stack alignItems="center" justifyContent="center" direction="row" gap={1} sx={{ mt: 2 }}>
           <IconButton size="small" aria-label="menu" sx={{}}>
@@ -78,7 +90,7 @@ export default function Dashboard() {
 
         <br></br>
 
-        <Stack alignItems="center" direction="row" justifyContent="space-between" gap={14}>
+        <Stack alignItems="center" direction="row" justifyContent="space-between">
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
             Your Projects
           </Typography>

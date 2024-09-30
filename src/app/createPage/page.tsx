@@ -30,10 +30,6 @@ export default function CreatePage() {
 
   const { avatarUrl, fullName, loading: metadataLoading } = useSupabaseUserMetadata()
 
-  const handleCancel = () => {
-    router.push('/dashboard')
-  }
-
   const handleClear = () => {
     setTitle('')
     setDescription('')
@@ -94,7 +90,13 @@ export default function CreatePage() {
   return (
     <Container>
       <ThemeProvider theme={theme}>
-        <Button variant="contained" size="medium" color="primary" sx={{ mt: 2 }} onClick={handleCancel}>
+        <Button
+          variant="contained"
+          size="medium"
+          color="primary"
+          sx={{ mt: 2 }}
+          onClick={() => router.push('/dashboard')}
+        >
           Cancel
         </Button>
 
