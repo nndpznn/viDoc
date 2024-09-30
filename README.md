@@ -1,4 +1,6 @@
 ## Introducing viDoc!
+<img width="1099" alt="viDoc Demo1" src="https://github.com/user-attachments/assets/1aed29a6-eaff-497c-b0c3-db8009a82730">
+<img width="1098" alt="viDoc Demo2" src="https://github.com/user-attachments/assets/9eb2d455-a152-42b9-bf77-122535e1b22a">
 
 Targeting amateur videographers and filmmakers looking for a platform to organize their many ideas and keep track of projects, viDoc is designed to streamline the creative process, providing space to take notes, compose shotlists, and eventually, organize ideas visually on a graphic timeline.
 
