@@ -9,9 +9,8 @@ export default function VideoCard({ project }: { project: Project }) {
     <>
       <Card
         sx={{
-          ml: 2,
-          mr: 2,
-          mb: 2,
+          mr: 3,
+          mb: 3,
           bgcolor: '#575962',
           width: 350,
           height: 330,

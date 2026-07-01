@@ -19,6 +19,7 @@ import {
   DialogContent,
   DialogContentText,
   TextField,
+  Grid,
 } from '@mui/material'
 import { useParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
@@ -35,6 +36,7 @@ export default function ProjectDetail() {
   const [formError, setFormError] = useState('')
 
   const [data, setData] = useState<Project | null>(null)
+  const [inklings, setInklings] = useState<Inkling[] | null>(null)
   const [loading, setLoading] = useState(true)
 
   // Handling delete post
@@ -105,6 +107,7 @@ export default function ProjectDetail() {
       setFormError('')
       setOpenNewInkling(false)
     }
+    router.refresh()
   }
 
   // Fetching project information from Supabase based on page ID.
@@ -122,17 +125,54 @@ export default function ProjectDetail() {
       setLoading(false)
     }
 
-    fetchData()
+    const fetchInklings = async () => {
+      const { data, error } = await supabase
+        .from('inklings')
+        .select('*')
+        .eq('project_id', id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('There was an error trying to fetch Inklings.', error)
+      } else {
+        setInklings(data)
+      }
+    }
+
+    fetchData(), fetchInklings()
   }, [id])
 
   // Loading case, displays basic graphic
   if (loading || !data)
     return (
-      <div>
+      <Container>
         <ThemeProvider theme={theme}>
-          <Button variant="contained" sx={{ ml: 2, mt: 2, mb: 2 }} onClick={() => router.back()}>
-            Back
-          </Button>
+          <Stack alignItems="center" justifyContent="space-between" direction="row">
+            <Button variant="contained" sx={{ mt: 2, mb: 2 }} onClick={() => router.back()}>
+              Back
+            </Button>
+            <Button
+              variant="contained"
+              size="medium"
+              color="primary"
+              sx={{ mt: 2 }}
+              onClick={() => setOpenDelete(true)}
+            >
+              Delete
+            </Button>
+            <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
+              <DialogTitle id="alert-dialog-title">Delete viDoc?</DialogTitle>
+              <DialogContent>This project won&apos;t ever see the light of day... are you sure?</DialogContent>
+              <DialogActions>
+                <Button variant="contained" onClick={() => setOpenDelete(false)}>
+                  Cancel
+                </Button>
+                <Button variant="contained" onClick={handleDelete} autoFocus>
+                  Yes, delete
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Stack>
           <Typography
             variant="h2"
             sx={{
@@ -149,7 +189,7 @@ export default function ProjectDetail() {
             {loading ? 'Loading your viDoc...' : 'Data not found.'}
           </Typography>
         </ThemeProvider>
-      </div>
+      </Container>
     )
 
   // EXAMPLE TIMELINE
@@ -211,8 +251,10 @@ export default function ProjectDetail() {
             New
           </Button>
           <Dialog open={openNewInkling} onClose={handleCloseInklings}>
-            <DialogTitle id="new-inkling-heading">New Inkling</DialogTitle>
-            <DialogContent>
+            <DialogTitle id="new-inkling-heading" sx={{ fontWeight: 'bold', fontSize: '25px' }}>
+              New Inkling
+            </DialogTitle>
+            <DialogContent sx={{ fontWeight: 'bold', fontSize: '20px' }}>
               Title
               <TextField
                 value={newInklingTitle}
@@ -226,7 +268,7 @@ export default function ProjectDetail() {
                   style: {
                     fontSize: '1.75rem',
                     color: '#ffffff',
-                    fontWeight: 600,
+                    fontWeight: 1000,
                   },
                 }}
               />
@@ -261,7 +303,18 @@ export default function ProjectDetail() {
           </Dialog>
         </Stack>
 
-        <InklingCard inkling={exampleInkling1}></InklingCard>
+        {/* <InklingCard inkling={exampleInkling1}></InklingCard> */}
+        <Grid container>
+          {inklings && (
+            <>
+              {inklings.map((inkling: Inkling) => (
+                <Grid key={inkling.id} item>
+                  <InklingCard inkling={inkling}></InklingCard>
+                </Grid>
+              ))}
+            </>
+          )}
+        </Grid>
       </ThemeProvider>
     </Container>
   )

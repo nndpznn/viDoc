@@ -102,7 +102,7 @@ export default function Dashboard() {
 
         <br></br>
 
-        <Grid container spacing={0} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="center">
+        <Grid container alignItems="center">
           {fetchError && (
             <Typography
               variant="h4"
@@ -124,15 +124,7 @@ export default function Dashboard() {
           {projects && (
             <>
               {projects.map((project: Project) => (
-                <Grid
-                  key={project.id}
-                  item
-                  xs={12}
-                  sm={6}
-                  md={4}
-                  lg={3}
-                  onClick={() => router.push(`/dashboard/${project.id}`)}
-                >
+                <Grid key={project.id} item onClick={() => router.push(`/dashboard/${project.id}`)}>
                   <VideoCard project={project}></VideoCard>
                 </Grid>
               ))}

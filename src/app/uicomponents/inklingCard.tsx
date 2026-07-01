@@ -4,7 +4,17 @@ import Inkling from '../models/inkling'
 export default function InklingCard({ inkling }: { inkling: Inkling }) {
   return (
     <>
-      <Card sx={{ width: 350, minHeight: 200, bgcolor: '#575962', ':hover': { boxShadow: 10 }, cursor: 'pointer' }}>
+      <Card
+        sx={{
+          width: 350,
+          minHeight: 200,
+          bgcolor: '#575962',
+          ':hover': { boxShadow: 10 },
+          cursor: 'pointer',
+          marginRight: 3,
+          marginBottom: 3,
+        }}
+      >
         <CardContent>
           <Typography variant="h5" color="white" sx={{ fontWeight: 'bold', mb: 1 }}>
             {inkling.title}

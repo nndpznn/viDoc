@@ -1,10 +1,12 @@
 class Inkling {
+  id: string
   title: string
   body: string
   // author_id: string
   // user_id: string
 
   constructor(title: string, body: string) {
+    this.id = ''
     this.title = title
     this.body = body
     // this.author_id = ''
