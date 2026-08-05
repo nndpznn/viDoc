@@ -16,6 +16,7 @@ import {
 
 import { useSupabaseUserMetadata } from '@/hooks/useSupabaseUserMetadata'
 import { useRouter } from 'next/navigation'
+import { saveProjectMeta } from '@/utils/projectLocalStore'
 
 import theme from '../theme/allTheme'
 import { useState } from 'react'
@@ -26,16 +27,19 @@ export default function CreatePage() {
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [deadline, setDeadline] = useState('')
   const [formError, setFormError] = useState('')
+  const [open, setOpen] = useState(false)
 
-  const { avatarUrl, fullName, loading: metadataLoading } = useSupabaseUserMetadata()
+  const { fullName } = useSupabaseUserMetadata()
 
   const handleClear = () => {
     setTitle('')
     setDescription('')
+    setDeadline('')
   }
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault()
 
     if (!title || !description) {
@@ -51,37 +55,59 @@ export default function CreatePage() {
 
     if (sessionError || !session) {
       setFormError('User is not authenticated.')
+      setOpen(true)
       return
     }
 
     const userID = session.user.id
 
-    const { data, error } = await supabase
-      .from('projects')
-      .insert([
-        {
-          title: title,
-          description: description,
-          user_id: userID,
-          full_name: fullName,
-        },
-      ])
-      .select()
+    const payload: {
+      title: string
+      description: string
+      user_id: string
+      deadline?: string
+    } = {
+      title,
+      description,
+      user_id: userID,
+    }
+
+    if (deadline) payload.deadline = deadline
+
+    let { data, error } = await supabase.from('projects').insert([payload]).select()
+
+    // If deadline column is missing, retry without it and store locally.
+    if (error && deadline) {
+      const retry = await supabase
+        .from('projects')
+        .insert([
+          {
+            title,
+            description,
+            user_id: userID,
+          },
+        ])
+        .select()
+      data = retry.data
+      error = retry.error
+    }
 
     if (error) {
       console.log(error)
       setFormError("Data couldn't be published.")
+      setOpen(true)
+      return
     }
 
-    if (data) {
-      console.log(data)
-      console.log('form data submitted successfully!', title, description)
+    if (data?.[0]?.id != null) {
+      if (deadline) saveProjectMeta(String(data[0].id), { deadline })
       setFormError('')
-      router.push('/dashboard')
+      router.push(`/dashboard/${data[0].id}`)
+      return
     }
-  }
 
-  const [open, setOpen] = useState(false)
+    router.push('/dashboard')
+  }
 
   return (
     <Container>
@@ -118,7 +144,7 @@ export default function CreatePage() {
                 fontWeight: 600,
               },
             }}
-          ></TextField>
+          />
 
           <Typography variant="h3" sx={{ ml: 3, mt: 3 }}>
             / description
@@ -139,13 +165,28 @@ export default function CreatePage() {
                 fontWeight: 600,
               },
             }}
-          ></TextField>
+          />
 
-          {/* {formError && (
-            <Typography variant="h5" sx={{ ml: 8, mr: 8, mt: 15, textAlign: 'center', fontWeight: 'bold' }}>
-              {formError}
-            </Typography>
-          )} */}
+          <Typography variant="h3" sx={{ ml: 3, mt: 3 }}>
+            / deadline
+          </Typography>
+          <TextField
+            type="date"
+            value={deadline}
+            onChange={e => setDeadline(e.target.value)}
+            size="medium"
+            variant="outlined"
+            fullWidth
+            sx={{ mt: 1, backgroundColor: '#575962' }}
+            InputLabelProps={{ shrink: true }}
+            InputProps={{
+              style: {
+                fontSize: '1.75rem',
+                color: '#ffffff',
+                fontWeight: 600,
+              },
+            }}
+          />
         </form>
 
         <Stack direction="row" justifyContent="space-between">
@@ -158,11 +199,9 @@ export default function CreatePage() {
         </Stack>
 
         <Dialog open={open} onClose={() => setOpen(false)}>
-          <DialogTitle id="alert-dialog-title">{'Submitting error.'}</DialogTitle>
+          <DialogTitle>Submitting error.</DialogTitle>
           <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Please fill out all fields before submitting.
-            </DialogContentText>
+            <DialogContentText>{formError || 'Please fill out all fields before submitting.'}</DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button variant="contained" onClick={() => setOpen(false)}>

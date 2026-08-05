@@ -3,41 +3,43 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { Avatar, CircularProgress, IconButton, Button, Container, Grid, Card, Typography, Stack } from '@mui/material'
+import {
+  Avatar,
+  CircularProgress,
+  IconButton,
+  Button,
+  Container,
+  Grid,
+  Typography,
+  Stack,
+} from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 
 import { supabase } from '@/clients/supabaseClient'
 import { useSupabaseUserMetadata } from '@/hooks/useSupabaseUserMetadata'
+import { loadProjectMeta } from '@/utils/projectLocalStore'
 
 import VideoCard from '../uicomponents/videoCard'
 import Project from '../models/project'
 import LogoutButton from '../uicomponents/logoutButton'
+import ProfileSettingsDialog from '../uicomponents/profileSettingsDialog'
 
 import theme from '../theme/allTheme'
-
-// EXAMPLE PROJECTS
-const project1 = new Project('Korea Vlog #1', 'The first of many Study Abroad vlogs!', 1234567)
-const project2 = new Project('Korea Pre-Prep', 'Finishing up some last things I need to do before leaving.', 2345678)
-const project3 = new Project('Doing absolutely... something?', 'Maybe I do have it in me.', 3456789)
 
 export default function Dashboard() {
   const router = useRouter()
 
-  const { avatarUrl, fullName, loading: metadataLoading } = useSupabaseUserMetadata()
-
-  console.log({
-    avatarUrl,
-    fullName,
-    metadataLoading,
-  })
+  const { avatarUrl, fullName, email, uid, loading: metadataLoading } = useSupabaseUserMetadata()
+  const [profileOpen, setProfileOpen] = useState(false)
 
   const handleLogout = async () => {
     router.push('/')
     await supabase.auth.signOut()
   }
 
-  const [fetchError, setFetchError] = useState<any>(null)
-  const [projects, setProjects] = useState<any>(null)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const [projects, setProjects] = useState<Project[] | null>(null)
+  const [loadingProjects, setLoadingProjects] = useState(true)
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -47,14 +49,19 @@ export default function Dashboard() {
         setFetchError('Error fetching viDoc projects for this user.')
         setProjects(null)
         console.log(error)
-      }
-      if (data) {
-        setProjects(data)
+      } else if (data) {
+        setProjects(
+          data.map((row: { id: number; title: string; description: string; deadline?: string | null }) => {
+            const meta = loadProjectMeta(String(row.id))
+            return new Project(row.title, row.description, row.id, row.deadline ?? meta.deadline ?? null)
+          })
+        )
         setFetchError(null)
       }
+      setLoadingProjects(false)
     }
 
-    fetchProjects()
+    void fetchProjects()
   }, [])
 
   return (
@@ -62,21 +69,11 @@ export default function Dashboard() {
       <ThemeProvider theme={theme}>
         <Stack alignItems="center" direction="row" justifyContent="space-between">
           <LogoutButton logoutFunction={handleLogout} />
-
-          <Button
-            disabled={true}
-            variant="contained"
-            size="medium"
-            color="primary"
-            onClick={() => router.push('/dragdropTest')}
-          >
-            Drag/Drop
-          </Button>
         </Stack>
 
         <Stack alignItems="center" justifyContent="center" direction="row" gap={1} sx={{ mt: 2 }}>
-          <IconButton size="small" aria-label="menu" sx={{}}>
-            {metadataLoading ? <CircularProgress /> : <Avatar alt={fullName} src={avatarUrl} />}
+          <IconButton size="small" aria-label="Open profile settings" onClick={() => setProfileOpen(true)}>
+            {metadataLoading ? <CircularProgress size={32} /> : <Avatar alt={fullName} src={avatarUrl} />}
           </IconButton>
 
           <Typography variant="h6">
@@ -84,11 +81,25 @@ export default function Dashboard() {
           </Typography>
         </Stack>
 
+        <Stack alignItems="center" sx={{ mt: 1 }}>
+          <Button variant="contained" size="small" color="secondary" onClick={() => setProfileOpen(true)}>
+            Profile settings
+          </Button>
+        </Stack>
+
+        <ProfileSettingsDialog
+          open={profileOpen}
+          onClose={() => setProfileOpen(false)}
+          uid={uid}
+          initialFullName={fullName}
+          initialEmail={email}
+        />
+
         <Typography variant="h4" sx={{ mt: 2, textAlign: 'center', fontWeight: 'bold' }}>
           Dashboard
         </Typography>
 
-        <br></br>
+        <br />
 
         <Stack alignItems="center" direction="row" justifyContent="space-between">
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
@@ -100,9 +111,15 @@ export default function Dashboard() {
           </Button>
         </Stack>
 
-        <br></br>
+        <br />
 
         <Grid container alignItems="center">
+          {loadingProjects && (
+            <Stack sx={{ width: '100%', mt: 8 }} alignItems="center">
+              <CircularProgress />
+            </Stack>
+          )}
+
           {fetchError && (
             <Typography
               variant="h4"
@@ -121,25 +138,28 @@ export default function Dashboard() {
             </Typography>
           )}
 
-          {projects && (
-            <>
-              {projects.map((project: Project) => (
-                <Grid key={project.id} item onClick={() => router.push(`/dashboard/${project.id}`)}>
-                  <VideoCard project={project}></VideoCard>
-                </Grid>
-              ))}
-            </>
+          {!loadingProjects && projects && projects.length === 0 && (
+            <Typography
+              variant="h5"
+              sx={{
+                width: '100%',
+                mt: 8,
+                textAlign: 'center',
+                backgroundColor: '#575962',
+                padding: 4,
+                borderRadius: 4,
+              }}
+            >
+              No projects yet — create your first viDoc.
+            </Typography>
           )}
 
-          {/* <Grid item xs={12} sm={4}>
-            <VideoCard project={project1} />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <VideoCard project={project2} />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <VideoCard project={project3} />
-          </Grid> */}
+          {projects &&
+            projects.map((project: Project) => (
+              <Grid key={project.id} item onClick={() => router.push(`/dashboard/${project.id}`)}>
+                <VideoCard project={project} />
+              </Grid>
+            ))}
         </Grid>
       </ThemeProvider>
     </Container>

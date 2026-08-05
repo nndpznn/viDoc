@@ -1,16 +1,14 @@
-import Inkling from './inkling'
-
 class Project {
   id: number
   title: string
   description: string
-  // inklings: Inkling[]
+  deadline?: string | null
 
-  constructor(title: string, description: string, id: number) {
+  constructor(title: string, description: string, id: number, deadline?: string | null) {
     this.id = id
     this.title = title
     this.description = description
-    // this.inklings = []
+    this.deadline = deadline ?? null
   }
 }
 

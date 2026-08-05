@@ -2,123 +2,68 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/legacy/image'
+import Image from 'next/image'
 
 import { supabase } from '@/clients/supabaseClient'
 
-import { useTheme, Theme, ThemeProvider } from '@mui/material/styles'
-import { Avatar, CircularProgress, Typography, Box } from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles'
+import { CircularProgress, Typography, Box } from '@mui/material'
 
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
 
 import * as SupabaseAuthController from '@/controllers/SupabaseAuthController'
 
-// Use local images only (allows autosizing) -- not the public directory
-// https://nextjs.org/docs/app/building-your-application/optimizing/images#local-images
-// import logoImage from '@/assets/logo_image.png'
-
 import { splitFullName } from '@/utils/strings'
 import { ProfileRow, PROFILES_TABLE } from '@/types/supabase.database.custom.types'
-import useViewportHeight from '@/hooks/useViewportHeight'
-import { useSupabaseUserMetadata } from '@/hooks/useSupabaseUserMetadata'
 import theme from './theme/allTheme'
 
-const useStyles = (theme: Theme) => ({
-  root: {
-    display: 'flex',
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    // backgroundColor: theme.palette.background.default,
-    backgroundColor: '#787b87',
-    fontWeight: 'bold',
-    gap: theme.spacing(8),
-  },
-
-  logoContainer: {
-    width: '60%',
-    height: 'auto',
-    // marginBottom: theme.spacing(8),
-    [theme.breakpoints.up('sm')]: {
-      width: '35%',
-    },
-    [theme.breakpoints.up('md')]: {
-      width: '30%',
-    },
-    [theme.breakpoints.up('lg')]: {
-      width: '25%',
-    },
-    [theme.breakpoints.up('xl')]: {
-      width: '15%',
-    },
-  },
-
-  title: {
-    fontWeight: 'bold',
-    marginBottom: theme.spacing(5),
-    color: 'black',
-  },
-
-  subtitle: {
-    // fontWeight: 'bold',
-    marginBottom: theme.spacing(2),
-  },
-})
-
 export default function Home() {
-  const classes = useStyles(useTheme())
-
   const router = useRouter()
-  const viewportHeight = useViewportHeight()
-
   const [loading, setLoading] = useState(false)
-
-  const { avatarUrl, fullName, loading: metadataLoading } = useSupabaseUserMetadata()
-
-  console.log({
-    avatarUrl,
-    fullName,
-    metadataLoading,
-  })
 
   useEffect(() => {
     const checkSession = async () => {
-      console.info('CHECKING SESSION')
       const sessionData = await supabase.auth.getSession()
       const user = sessionData?.data.session
-      console.info('DASHBOARD USER: ', user)
-
       if (user) {
         router.push('/dashboard')
       }
     }
-    checkSession()
+    void checkSession()
   }, [router])
 
-  const handleClick = () => {
-    console.info('Avatar Clicked')
-  }
-
   return (
-    <Box
-      sx={{
-        ...classes.root,
-        height: `${viewportHeight}px`,
-      }}
-    >
-      <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
+      <Box
+        sx={{
+          display: 'flex',
+          flex: 1,
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#787b87',
+          fontWeight: 'bold',
+          gap: 8,
+          minHeight: '100dvh',
+        }}
+      >
         <Typography variant="h1" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
           welcome to <span style={{ backgroundColor: '#102BEF', padding: 10, borderRadius: 15 }}>viDoc</span>
         </Typography>
 
-        <Box sx={classes.logoContainer}>
+        <Box
+          sx={{
+            width: { xs: '60%', sm: '35%', md: '30%', lg: '25%', xl: '15%' },
+            height: 'auto',
+          }}
+        >
           <Image
             src="/images/cameraplaceholderlogo.png"
             alt="ViDoc Logo"
-            layout="responsive"
-            width="512"
-            height="512"
+            width={512}
+            height={512}
+            priority
+            style={{ width: '100%', height: 'auto' }}
           />
         </Box>
 
@@ -129,35 +74,20 @@ export default function Home() {
             useOneTap={false}
             size="large"
             type="standard"
-            // style={{ width: '300px', height: '50px' }}
             onSuccess={async (credentialResponse: CredentialResponse) => {
               setLoading(true)
-              console.info('CREDENTIAL RESPONSE JWT TOKEN: ', JSON.stringify(credentialResponse, null, 2))
 
               if (!credentialResponse.credential) throw new Error('No credential found in response')
 
-              // Sign in to Supabase with the Google credential
-              // https://supabase.com/docs/guides/auth/social-login/auth-google#using-personalized-sign-in-buttons-one-tap-or-automatic-signin
               const supabaseResponse = await SupabaseAuthController.signInWithIdToken({
                 provider: 'google',
                 token: credentialResponse.credential,
               })
 
-              console.info('SUPABASE signInWithIdToken RESPONSE: ', supabaseResponse)
-
-              // Get the user's full name from the response
               const { fullName, email, uid } = SupabaseAuthController.extractSupabaseUserFields(supabaseResponse)
-
-              // Split the full name into first and last name
               const { firstName, lastName } = splitFullName(fullName)
 
-              // Search Supabase profiles table for the profile by UID
-              const { data: profileData, error: profileError } = await supabase
-                .from(PROFILES_TABLE)
-                .select()
-                .eq('uid', uid)
-                .single()
-              console.info('EXISTING PROFILE DATA: ', profileData)
+              const { data: profileData } = await supabase.from(PROFILES_TABLE).select().eq('uid', uid).single()
 
               const baseUpsertData: ProfileRow = {
                 uid,
@@ -165,7 +95,6 @@ export default function Home() {
                 email,
               }
 
-              // If the first and last name are already in the profiles table, leave them out of the upsert
               const upsertData =
                 profileData?.first_name && profileData?.last_name
                   ? baseUpsertData
@@ -175,16 +104,12 @@ export default function Home() {
                       last_name: lastName,
                     }
 
-              // Upsert the row
-              const { data, error } = await supabase
+              const { error } = await supabase
                 .from(PROFILES_TABLE)
-                .upsert([upsertData], { onConflict: 'uid' }) // On insert conflict, update by uid
+                .upsert([upsertData], { onConflict: 'uid' })
                 .select()
-              console.info('UPSERTED DATA: ', data)
 
               if (error) console.error('UPSERT ERROR: ', error)
-
-              console.info('routing to dashboard...')
 
               router.push('/dashboard')
             }}
@@ -193,7 +118,7 @@ export default function Home() {
             }}
           />
         )}
-      </ThemeProvider>
-    </Box>
+      </Box>
+    </ThemeProvider>
   )
 }

@@ -1,25 +1,15 @@
 import { useState, useEffect } from 'react'
 
-// Custom hook name useViewportHeight
+/** Viewport height in px. Always starts at 0 on server/client, then syncs after mount (hydration-safe). */
 const useViewportHeight = (): number => {
-  // State to store the viewport height
-  const [height, setHeight] = useState<number>(0)
-
-  // Handler to update the viewport height
-  const updateHeight = () => {
-    setHeight(window.innerHeight)
-  }
+  const [height, setHeight] = useState(0)
 
   useEffect(() => {
-    // Set initial height
+    const updateHeight = () => setHeight(window.innerHeight)
     updateHeight()
-
-    // Add resize event listener to update the height when the viewport changes
     window.addEventListener('resize', updateHeight)
-
-    // Clean up the event listener on component unmount
     return () => window.removeEventListener('resize', updateHeight)
-  }, []) // Empty dependency array means this effect runs once on mount
+  }, [])
 
   return height
 }

@@ -1,25 +1,13 @@
-import { useEffect, useState } from 'react'
 import { useSupabaseUser } from './useSupabaseUser'
 
 export const useSupabaseUserMetadata = () => {
-  const [loading, setLoading] = useState(true)
+  const { user, loading } = useSupabaseUser()
 
-  const [email, setEmail] = useState<string | undefined>('')
-  const [fullName, setFullName] = useState('')
-  const [uid, setUid] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
-
-  const { user, loading: userLoading } = useSupabaseUser()
-
-  useEffect(() => {
-    if (user) {
-      setEmail(user.email)
-      setFullName(user.user_metadata.full_name)
-      setUid(user.id)
-      setAvatarUrl(user.user_metadata.avatar_url)
-      setLoading(false)
-    }
-  }, [user])
-
-  return { email, fullName, uid, avatarUrl, loading }
+  return {
+    email: user?.email,
+    fullName: user?.user_metadata?.full_name ?? '',
+    uid: user?.id ?? '',
+    avatarUrl: user?.user_metadata?.avatar_url ?? '',
+    loading,
+  }
 }

@@ -39,6 +39,11 @@ export default function VideoCard({ project }: { project: Project }) {
           >
             {project.description ? project.description : defaultCard.description}
           </Typography>
+          {project.deadline && (
+            <Typography variant="caption" color="white" sx={{ opacity: 0.8, display: 'block', mt: 1 }}>
+              Due {project.deadline}
+            </Typography>
+          )}
         </CardContent>
       </Card>
     </>

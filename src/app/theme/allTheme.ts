@@ -1,4 +1,4 @@
-import { createTheme, Paper } from '@mui/material'
+import { createTheme } from '@mui/material'
 
 const theme = createTheme({
   palette: {
@@ -7,6 +7,14 @@ const theme = createTheme({
     },
     secondary: {
       main: '#575962',
+    },
+    background: {
+      default: '#787b87',
+      paper: '#575962',
+    },
+    text: {
+      primary: '#FFFFFF',
+      secondary: 'rgba(255, 255, 255, 0.7)',
     },
   },
   typography: {
@@ -24,6 +32,14 @@ const theme = createTheme({
     },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: '#787b87',
+          color: '#FFFFFF',
+        },
+      },
+    },
     MuiDialog: {
       styleOverrides: {
         paper: {

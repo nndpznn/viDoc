@@ -1,12 +1,13 @@
 'use client'
 
-import Inkling from '@/app/models/inkling'
 import Project from '@/app/models/project'
-import Timeline from '@/app/models/timeline'
 import theme from '@/app/theme/allTheme'
-import InklingCard from '@/app/uicomponents/inklingCard'
 import TimelineCard from '@/app/uicomponents/timelineCard'
+import TimelineToolbar from '@/app/uicomponents/timelineToolbar'
+import TimelineItemList from '@/app/uicomponents/timelineItemList'
 import { supabase } from '@/clients/supabaseClient'
+import { useProjectTimelines } from '@/hooks/useProjectTimelines'
+import { loadProjectMeta, saveProjectMeta } from '@/utils/projectLocalStore'
 import {
   Button,
   Container,
@@ -17,161 +18,196 @@ import {
   DialogTitle,
   DialogActions,
   DialogContent,
-  DialogContentText,
   TextField,
-  Grid,
 } from '@mui/material'
-import { useParams } from 'next/navigation'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+
+function ProjectTimelineSection({ projectId }: { projectId: string }) {
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
+  const importedRef = useRef(false)
+
+  const {
+    ready: timelinesReady,
+    timelines: timelineBoards,
+    activeTimeline,
+    activeTimelineId,
+    setActiveTimelineId,
+    createTimeline,
+    renameTimeline,
+    duplicateTimeline,
+    clearTimeline,
+    deleteTimeline,
+    addItem,
+    updateItem,
+    moveItem,
+    deleteItem,
+  } = useProjectTimelines(projectId)
+
+  useEffect(() => {
+    if (!timelinesReady || importedRef.current) return
+    if (!activeTimeline || activeTimeline.items.length > 0) {
+      importedRef.current = true
+      return
+    }
+
+    importedRef.current = true
+
+    const importInklings = async () => {
+      const { data: rows, error } = await supabase
+        .from('inklings')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true })
+
+      if (error || !rows?.length) return
+
+      rows.forEach((row: { title: string; body: string }, index: number) => {
+        const col = (index % 5) + 1
+        const rowIdx = Math.floor(index / 5)
+        addItem({
+          type: 'inkling',
+          title: row.title,
+          body: row.body,
+          x: 15 + col * 12,
+          y: 30 + rowIdx * 18,
+        })
+      })
+    }
+
+    void importInklings()
+  }, [projectId, timelinesReady, activeTimeline, addItem])
+
+  if (!activeTimeline) return null
+
+  return (
+    <>
+      <TimelineToolbar
+        timelines={timelineBoards}
+        activeTimelineId={activeTimelineId}
+        onSelect={setActiveTimelineId}
+        onCreate={createTimeline}
+        onRename={renameTimeline}
+        onDuplicate={duplicateTimeline}
+        onClear={clearTimeline}
+        onDelete={deleteTimeline}
+      />
+
+      <TimelineCard
+        timeline={activeTimeline}
+        selectedItemId={selectedItemId}
+        onSelectItem={setSelectedItemId}
+        onAddItem={addItem}
+        onMoveItem={moveItem}
+        onDeleteItem={itemId => {
+          deleteItem(itemId)
+          if (selectedItemId === itemId) setSelectedItemId(null)
+        }}
+      />
+
+      <Typography variant="h3" sx={{ mt: 3, mb: 2 }}>
+        Timeline items
+      </Typography>
+      <TimelineItemList
+        items={activeTimeline.items}
+        onSelect={setSelectedItemId}
+        onUpdate={updateItem}
+        onDelete={itemId => {
+          deleteItem(itemId)
+          if (selectedItemId === itemId) setSelectedItemId(null)
+        }}
+      />
+    </>
+  )
+}
 
 export default function ProjectDetail() {
   const router = useRouter()
-  const { id } = useParams()
+  const params = useParams()
+  const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : undefined
 
   const [openDelete, setOpenDelete] = useState(false)
-  const [openNewInkling, setOpenNewInkling] = useState(false)
-  const [newInklingTitle, setNewInklingTitle] = useState('')
-  const [newInklingBody, setNewInklingBody] = useState('')
+  const [openEdit, setOpenEdit] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editDeadline, setEditDeadline] = useState('')
   const [formError, setFormError] = useState('')
 
   const [data, setData] = useState<Project | null>(null)
-  const [inklings, setInklings] = useState<Inkling[] | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Handling delete post
   const handleDelete = async () => {
-    const { data, error } = await supabase.from('projects').delete().eq('id', id)
-    router.back()
-
-    if (error) {
-      console.log(error)
-    }
-    if (data) {
-      console.log(data)
-    }
+    const { error } = await supabase.from('projects').delete().eq('id', id)
+    if (error) console.log(error)
+    router.push('/dashboard')
   }
 
-  const handleCloseInklings = () => {
-    setOpenNewInkling(false)
-    setNewInklingTitle('')
-    setNewInklingBody('')
+  const openEditDialog = () => {
+    if (!data) return
+    setEditTitle(data.title)
+    setEditDescription(data.description)
+    setEditDeadline(data.deadline ?? '')
+    setFormError('')
+    setOpenEdit(true)
   }
 
-  // IN PROGRESS SUBMIT FUNCTION
-  const handleSubmit = async (e: any) => {
-    e.preventDefault()
-
-    if (!newInklingTitle || !newInklingBody) {
-      setFormError('Please fill out all fields before submitting.')
-      // setOpen(true)
+  const handleSaveProject = async () => {
+    if (!id || !editTitle.trim() || !editDescription.trim()) {
+      setFormError('Please fill out title and description.')
       return
     }
 
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    const deadline = editDeadline || null
 
-    if (sessionError || !session) {
-      setFormError('User is not authenticated.')
-      console.log('session error')
-      return
-    }
-
-    const userID = session.user.id
-    console.log(userID)
-
-    const { data, error } = await supabase
-      .from('inklings')
-      .insert([
-        {
-          title: newInklingTitle,
-          body: newInklingBody,
-          project_id: id,
-          user_id: userID,
-        },
-      ])
+    const { data: updated, error } = await supabase
+      .from('projects')
+      .update({ title: editTitle.trim(), description: editDescription.trim() })
+      .eq('id', id)
       .select()
+      .single()
+
+    saveProjectMeta(String(id), { deadline })
 
     if (error) {
-      console.log('data error')
-      setFormError("Data couldn't be published.")
+      console.error(error)
+      setData(prev => (prev ? new Project(editTitle.trim(), editDescription.trim(), prev.id, deadline) : prev))
+      setOpenEdit(false)
+      return
     }
 
-    if (data) {
-      console.log(data)
-      console.log('form data submitted successfully!', newInklingBody, newInklingTitle)
-      setNewInklingTitle('')
-      setNewInklingBody('')
-      setFormError('')
-      setOpenNewInkling(false)
+    if (updated) {
+      setData(new Project(updated.title, updated.description, updated.id, deadline))
     }
-    router.refresh()
+    setOpenEdit(false)
   }
 
-  // Fetching project information from Supabase based on page ID.
   useEffect(() => {
     if (!id) return
 
     const fetchData = async () => {
-      const { data, error } = await supabase.from('projects').select('*').eq('id', id).single()
+      const { data: row, error } = await supabase.from('projects').select('*').eq('id', id).single()
+      const meta = loadProjectMeta(String(id))
 
       if (error) {
         console.error('There was an error fetching the project.', error)
-      } else {
-        setData(data)
+        setData(null)
+      } else if (row) {
+        setData(new Project(row.title, row.description, row.id, row.deadline ?? meta.deadline ?? null))
       }
       setLoading(false)
     }
 
-    const fetchInklings = async () => {
-      const { data, error } = await supabase
-        .from('inklings')
-        .select('*')
-        .eq('project_id', id)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('There was an error trying to fetch Inklings.', error)
-      } else {
-        setInklings(data)
-      }
-    }
-
-    fetchData(), fetchInklings()
+    void fetchData()
   }, [id])
 
-  // Loading case, displays basic graphic
-  if (loading || !data)
+  if (loading || !data) {
     return (
       <Container>
         <ThemeProvider theme={theme}>
           <Stack alignItems="center" justifyContent="space-between" direction="row">
-            <Button variant="contained" sx={{ mt: 2, mb: 2 }} onClick={() => router.back()}>
+            <Button variant="contained" sx={{ mt: 2, mb: 2 }} onClick={() => router.push('/dashboard')}>
               Back
             </Button>
-            <Button
-              variant="contained"
-              size="medium"
-              color="primary"
-              sx={{ mt: 2 }}
-              onClick={() => setOpenDelete(true)}
-            >
-              Delete
-            </Button>
-            <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
-              <DialogTitle id="alert-dialog-title">Delete viDoc?</DialogTitle>
-              <DialogContent>This project won&apos;t ever see the light of day... are you sure?</DialogContent>
-              <DialogActions>
-                <Button variant="contained" onClick={() => setOpenDelete(false)}>
-                  Cancel
-                </Button>
-                <Button variant="contained" onClick={handleDelete} autoFocus>
-                  Yes, delete
-                </Button>
-              </DialogActions>
-            </Dialog>
           </Stack>
           <Typography
             variant="h2"
@@ -191,27 +227,20 @@ export default function ProjectDetail() {
         </ThemeProvider>
       </Container>
     )
-
-  // EXAMPLE TIMELINE
-  const exampleTimeline1 = new Timeline()
-  // EXAMPLE INKLING
-  const exampleInkling1 = new Inkling(
-    'General order of scenes',
-    '1 - Intro monologue about locking in and working on internship applications. 2 - Baseball game w/ HUG. 3 - Cafe of the Week, probably Protokoll.'
-  )
+  }
 
   return (
     <Container>
       <ThemeProvider theme={theme}>
         <Stack alignItems="center" justifyContent="space-between" direction="row">
-          <Button variant="contained" sx={{ mt: 2, mb: 2 }} onClick={() => router.back()}>
+          <Button variant="contained" sx={{ mt: 2, mb: 2 }} onClick={() => router.push('/dashboard')}>
             Back
           </Button>
           <Button variant="contained" size="medium" color="primary" sx={{ mt: 2 }} onClick={() => setOpenDelete(true)}>
             Delete
           </Button>
           <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
-            <DialogTitle id="alert-dialog-title">Delete viDoc?</DialogTitle>
+            <DialogTitle>Delete viDoc?</DialogTitle>
             <DialogContent>This project won&apos;t ever see the light of day... are you sure?</DialogContent>
             <DialogActions>
               <Button variant="contained" onClick={() => setOpenDelete(false)}>
@@ -232,89 +261,67 @@ export default function ProjectDetail() {
           {data.description}
         </Typography>
 
-        <Stack alignItems="center" justifyContent="center" direction="row" gap={25}>
-          <Button variant="contained" size="medium" color="primary" sx={{ mt: 2 }}>
+        {data.deadline && (
+          <Typography variant="subtitle1" sx={{ textAlign: 'center', mt: 1, opacity: 0.9 }}>
+            Deadline: {data.deadline}
+          </Typography>
+        )}
+
+        <Stack alignItems="center" justifyContent="center" direction="row" gap={2} sx={{ mt: 2 }}>
+          <Button variant="contained" size="medium" color="primary" onClick={openEditDialog}>
             Edit project info
           </Button>
         </Stack>
 
-        <Typography variant="h3" sx={{ mt: 2, mb: 2 }}>
+        <Dialog open={openEdit} onClose={() => setOpenEdit(false)} fullWidth maxWidth="sm">
+          <DialogTitle>Edit project</DialogTitle>
+          <DialogContent>
+            <TextField
+              fullWidth
+              margin="dense"
+              label="Title"
+              value={editTitle}
+              onChange={e => setEditTitle(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              margin="dense"
+              label="Description"
+              multiline
+              rows={3}
+              value={editDescription}
+              onChange={e => setEditDescription(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              margin="dense"
+              label="Deadline"
+              type="date"
+              value={editDeadline}
+              onChange={e => setEditDeadline(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+            {formError && (
+              <Typography color="error" sx={{ mt: 1 }}>
+                {formError}
+              </Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button variant="contained" onClick={() => setOpenEdit(false)}>
+              Cancel
+            </Button>
+            <Button variant="contained" onClick={handleSaveProject}>
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Typography variant="h3" sx={{ mt: 3, mb: 1 }}>
           Timeline
         </Typography>
-        <TimelineCard timeline={exampleTimeline1}></TimelineCard>
 
-        <Stack alignItems="center" justifyContent="space-between" direction="row">
-          <Typography variant="h3" sx={{ mt: 2, mb: 2 }}>
-            Inklings
-          </Typography>
-          <Button variant="contained" size="medium" onClick={() => setOpenNewInkling(true)}>
-            New
-          </Button>
-          <Dialog open={openNewInkling} onClose={handleCloseInklings}>
-            <DialogTitle id="new-inkling-heading" sx={{ fontWeight: 'bold', fontSize: '25px' }}>
-              New Inkling
-            </DialogTitle>
-            <DialogContent sx={{ fontWeight: 'bold', fontSize: '20px' }}>
-              Title
-              <TextField
-                value={newInklingTitle}
-                onChange={e => setNewInklingTitle(e.target.value)}
-                autoFocus
-                required
-                margin="dense"
-                fullWidth
-                variant="outlined"
-                InputProps={{
-                  style: {
-                    fontSize: '1.75rem',
-                    color: '#ffffff',
-                    fontWeight: 1000,
-                  },
-                }}
-              />
-              Body
-              <TextField
-                onChange={e => setNewInklingBody(e.target.value)}
-                value={newInklingBody}
-                multiline
-                rows={4}
-                autoFocus
-                required
-                margin="dense"
-                fullWidth
-                variant="outlined"
-                InputProps={{
-                  style: {
-                    fontSize: '1.75rem',
-                    color: '#ffffff',
-                    fontWeight: 600,
-                  },
-                }}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button variant="contained" onClick={handleCloseInklings}>
-                Cancel
-              </Button>
-              <Button variant="contained" type="submit" onClick={handleSubmit}>
-                Post
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </Stack>
-
-        {/* <InklingCard inkling={exampleInkling1}></InklingCard> */}
-        <Grid container>
-          {inklings && (
-            <>
-              {inklings.map((inkling: Inkling) => (
-                <Grid key={inkling.id} item>
-                  <InklingCard inkling={inkling}></InklingCard>
-                </Grid>
-              ))}
-            </>
-          )}
-        </Grid>
+        {id && <ProjectTimelineSection key={id} projectId={id} />}
       </ThemeProvider>
     </Container>
   )
